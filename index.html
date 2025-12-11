@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ApulianChain Calendar | Aggregatore Eventi 2026+</title>
+    <title>ApulianChain Calendar | Aggregatore Eventi Crypto & AI</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght=700&display=swap" rel="stylesheet">
 
     <style>
+        /* --- CSS Globale & Variabili --- */
         :root {
             --bg-dark: #09090b;
-            --bg-card: rgba(24, 24, 27, 0.7);
+            --bg-card: rgba(39, 39, 42, 0.7); /* Zinc/Neutral 800 semi-trasparente */
             --primary: #8b5cf6; /* Viola Crypto */
             --primary-glow: rgba(139, 92, 246, 0.5);
             --secondary: #06b6d4; /* Ciano Tech */
-            --success: #10b981;
             --text-main: #ffffff;
             --text-muted: #a1a1aa;
             --radius: 16px;
@@ -29,17 +29,17 @@
         body {
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-dark);
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
             color: var(--text-main);
             min-height: 100vh;
+            line-height: 1.6;
         }
+
+        a { text-decoration: none; color: inherit; }
 
         /* HEADER */
         header {
             padding: 1.5rem 5%;
-            background: rgba(9, 9, 11, 0.8);
+            background: rgba(9, 9, 11, 0.85);
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.08);
             position: sticky;
@@ -60,8 +60,8 @@
         }
 
         .add-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: var(--primary);
+            border: none;
             color: white;
             padding: 0.6rem 1.2rem;
             border-radius: 50px;
@@ -71,12 +71,21 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
         }
-        .add-btn:hover { background: var(--primary); border-color: var(--primary); }
+        .add-btn:hover { background: #7c3aed; }
 
-        /* FILTERS */
-        .filters-container {
+        /* CONTROLLI (Filtri + Ordina) */
+        .controls-bar {
             padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filters-container {
             display: flex;
             gap: 12px;
             overflow-x: auto;
@@ -85,7 +94,7 @@
         
         .filter-chip {
             background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
             padding: 0.5rem 1.2rem;
             border-radius: 50px;
             font-size: 0.85rem;
@@ -93,22 +102,33 @@
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         .filter-chip.active, .filter-chip:hover {
-            background: var(--primary);
+            background: var(--secondary);
             color: white;
-            border-color: var(--primary);
-            box-shadow: 0 0 15px var(--primary-glow);
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
         }
 
-        /* LAYOUT */
+        #sort-order {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        /* LAYOUT GRIGLIA */
         .app-grid {
             display: grid;
             grid-template-columns: 1fr 400px;
             gap: 2rem;
             padding: 0 5% 2rem 5%;
-            height: calc(100vh - 160px); /* Full height meno header/filters */
+            height: calc(100vh - 160px); 
         }
 
         @media (max-width: 1024px) {
@@ -126,16 +146,15 @@
             align-content: start;
         }
 
-        /* Scrollbar custom */
         .events-scroll::-webkit-scrollbar { width: 6px; }
         .events-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
         .event-card {
             background: var(--bg-card);
-            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(5px); /* Glassmorphism effect */
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--radius);
             padding: 1.5rem;
-            position: relative;
             transition: transform 0.3s, box-shadow 0.3s;
             display: flex;
             flex-direction: column;
@@ -143,8 +162,8 @@
 
         .event-card:hover {
             transform: translateY(-4px);
-            border-color: var(--secondary);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            border-color: var(--primary);
+            box-shadow: 0 5px 25px -5px var(--primary-glow);
         }
 
         .card-header {
@@ -154,30 +173,29 @@
             margin-bottom: 1rem;
         }
 
-        .source-badge {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-        }
-        .source-badge.bx-twitter { color: #1DA1F2; } /* Simulazione colore */
-        .source-badge.bxl-meta { color: #1877F2; }
+        .source-badge { font-size: 1.4rem; color: var(--text-muted); }
+        .source-badge.bxl-twitter { color: #1DA1F2; } 
+        .source-badge.bxl-facebook-circle { color: #1877F2; } 
         .source-badge.bxl-instagram { color: #E1306C; }
-        .source-badge.bxl-eventbrite { color: #F05537; } /* Colore Eventbrite */
 
         .date-badge {
-            background: rgba(255,255,255,0.05);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
+            background: linear-gradient(90deg, var(--secondary), #0f768b);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             font-weight: 600;
-            color: var(--secondary);
+            color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
-        .event-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.3; }
-        .event-loc { font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 1rem; }
+        .event-title { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem; line-height: 1.3; }
+        .event-loc { font-size: 0.95rem; color: #facc15; display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; }
         
         /* ACTIONS */
         .card-actions {
             margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
             display: flex;
             gap: 10px;
         }
@@ -187,7 +205,6 @@
             padding: 0.7rem;
             border-radius: 8px;
             text-align: center;
-            text-decoration: none;
             font-size: 0.9rem;
             font-weight: 600;
             transition: 0.2s;
@@ -198,54 +215,38 @@
         }
 
         .btn-info {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--text-muted);
         }
-        .btn-info:hover { background: rgba(255,255,255,0.1); }
+        .btn-info:hover { color: white; border-color: white; background: rgba(255,255,255,0.1); }
 
         .btn-buy {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, var(--primary), #5b21b6);
             color: white;
             border: none;
         }
         .btn-buy:hover { opacity: 0.9; box-shadow: 0 0 15px var(--primary-glow); }
 
-        /* MAP */
+        /* MAPPA */
         #map {
             height: 100%;
             width: 100%;
             border-radius: var(--radius);
             border: 1px solid rgba(255,255,255,0.1);
-            filter: grayscale(80%) invert(100%) contrast(90%); /* Mappa scura tech */
+            filter: hue-rotate(200deg) brightness(80%) contrast(150%); /* Look tech */
         }
 
-        /* MODALE & FORM */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            z-index: 2000; display: none; align-items: center; justify-content: center;
+        /* FOOTER */
+        footer {
+            text-align: center;
+            padding: 3rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            font-size: 0.9rem;
         }
-        .modal-content {
-            background: #18181b; border: 1px solid #333; padding: 2rem;
-            border-radius: var(--radius); width: 90%; max-width: 500px;
-        }
-        .form-input {
-            width: 100%; padding: 10px; margin: 8px 0; background: #27272a;
-            border: 1px solid #3f3f46; color: white; border-radius: 8px;
-        }
-
-        /* NOTIFICATION */
-        .toast {
-            position: fixed; bottom: 30px; right: 30px;
-            background: #18181b; border-left: 4px solid var(--secondary);
-            padding: 1rem; border-radius: 8px; color: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            display: none; z-index: 3000;
-            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
+        footer a { color: var(--secondary); font-weight: 600; transition: color 0.3s; }
+        footer a:hover { color: var(--primary); }
     </style>
 </head>
 <body>
@@ -258,27 +259,36 @@
     <header>
         <div class="brand"><i class='bx bx-cube-alt'></i> ApulianChain</div>
         <button class="add-btn" onclick="openModal()">
-            <i class='bx bx-plus'></i> Aggiungi Evento
+            <i class='bx bx-plus'></i> Proponi Evento
         </button>
     </header>
 
-    <div class="filters-container">
-        <div class="filter-chip active" onclick="filterEvents('all', this)"><i class='bx bx-grid-alt'></i> Tutto</div>
-        <div class="filter-chip" onclick="filterEvents('Crypto', this)"><i class='bx bx-bitcoin'></i> Crypto</div>
-        <div class="filter-chip" onclick="filterEvents('Blockchain', this)"><i class='bx bx-link'></i> Blockchain</div>
-        <div class="filter-chip" onclick="filterEvents('Finanza', this)"><i class='bx bx-line-chart'></i> Finanza</div>
-        <div class="filter-chip" onclick="filterEvents('AI', this)"><i class='bx bx-brain'></i> AI & Tech</div>
+    <div class="controls-bar">
+        <div class="filters-container">
+            <div class="filter-chip active" data-category="all" onclick="filterEvents('all', this)"><i class='bx bx-grid-alt'></i> Tutti gli Eventi</div>
+            <div class="filter-chip" data-category="Crypto" onclick="filterEvents('Crypto', this)"><i class='bx bx-bitcoin'></i> Crypto</div>
+            <div class="filter-chip" data-category="Blockchain" onclick="filterEvents('Blockchain', this)"><i class='bx bx-link'></i> Blockchain</div>
+            <div class="filter-chip" data-category="Finanza" onclick="filterEvents('Finanza', this)"><i class='bx bx-line-chart'></i> Finanza</div>
+            <div class="filter-chip" data-category="AI" onclick="filterEvents('AI', this)"><i class='bx bx-brain'></i> AI & Tech</div>
+        </div>
+
+        <select id="sort-order" onchange="handleSortChange(this.value)">
+            <option value="date-asc">Ordina: Data (Più Prossimo)</option>
+            <option value="date-desc">Ordina: Data (Più Lontano)</option>
+            <option value="name-asc">Ordina: Nome (A-Z)</option>
+        </select>
     </div>
 
     <div class="app-grid">
         <div id="events-container" class="events-scroll">
-            </div>
+            <p style="text-align:center; padding: 50px;">Caricamento eventi in corso...</p>
+        </div>
         <div id="map-column">
             <div id="map"></div>
         </div>
     </div>
 
-    <div id="modal" class="modal-overlay">
+    <div id="modal" class="modal-overlay" style="display:none;">
         <div class="modal-content">
             <h2 style="margin-bottom:1rem">Proponi Evento Crew</h2>
             <form id="addEventForm">
@@ -292,7 +302,7 @@
                 <input type="date" class="form-input" id="in-date" min="2026-01-01" required>
                 <input type="text" class="form-input" id="in-city" placeholder="Città" required>
                 <input type="url" class="form-input" id="in-link" placeholder="Link Info (es. Facebook/X)" required>
-                <input type="url" class="form-input" id="in-ticket" placeholder="Link Ticket (es. Eventbrite/Luma)">
+                <input type="url" class="form-input" id="in-ticket" placeholder="Link Ticket (Opzionale)">
                 
                 <div style="display:flex; gap:10px; margin-top:1rem;">
                     <button type="button" class="btn btn-info" onclick="closeModal()">Annulla</button>
@@ -302,89 +312,126 @@
         </div>
     </div>
 
+    <footer>
+        <p>Firmato <strong>ApulianChain</strong> | Aggregatore Eventi Italiani 2026+</p>
+        <p style="margin-top: 10px;">
+            Cerchi altri eventi? <a href="https://thrilld.it" target="_blank">#THRILLD</a>
+        </p>
+    </footer>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        /* --- DATI (Simulazione API Aggregator) --- */
-        // Nota Tecnica: In produzione, questo JSON dovrebbe essere generato da un backend (Python/Node) 
-        // che fa scraping di FB/Eventbrite/X, poiché il browser blocca le chiamate dirette (CORS).
-        
-        let events = [
-            { 
-                id: 1, 
-                title: "Apulian Web3 Summit", 
-                date: "2026-03-15", 
-                category: "Blockchain", 
-                source: "facebook", // facebook, x, instagram, eventbrite
-                city: "Bari", 
-                lat: 41.1171, lon: 16.8719, 
-                url: "https://facebook.com/event-placeholder",
-                ticketUrl: "https://eventbrite.com/ticket-placeholder"
-            },
-            { 
-                id: 2, 
-                title: "Milan AI Revolution", 
-                date: "2026-05-10", 
-                category: "AI", 
-                source: "eventbrite",
-                city: "Milano", 
-                lat: 45.4642, lon: 9.1900, 
-                url: "https://eventbrite.com/info",
-                ticketUrl: "https://eventbrite.com/buy"
-            },
-            { 
-                id: 3, 
-                title: "DeFi Rome Meetup", 
-                date: "2026-02-20", 
-                category: "Finanza", 
-                source: "x",
-                city: "Roma", 
-                lat: 41.9028, lon: 12.4964, 
-                url: "https://twitter.com/event",
-                ticketUrl: null // Evento gratuito
-            },
-            { 
-                id: 4, 
-                title: "NFT Napoli Gallery", 
-                date: "2026-06-01", 
-                category: "Crypto", 
-                source: "instagram",
-                city: "Napoli", 
-                lat: 40.8518, lon: 14.2681, 
-                url: "https://instagram.com/p/placeholder",
-                ticketUrl: "https://luma.com/ticket"
-            },
-            // Evento imminente per testare notifica
-            { 
-                id: 99, 
-                title: "Test Evento Imminente", 
-                date: getRelativeDate(2), 
-                category: "Blockchain", 
-                source: "linkedin",
-                city: "Lecce", 
-                lat: 40.3515, lon: 18.1750, 
-                url: "#", 
-                ticketUrl: "#" 
-            }
-        ];
+        /* --- STATO GLOBALE --- */
+        let events = [];
+        let markers = [];
+        let currentFilter = 'all';
+        let currentSort = 'date-asc'; // Default: Data (Più Prossimo)
 
         /* --- MAPPA --- */
         const map = L.map('map').setView([42.5, 12.5], 6);
-        // Tile scura gratuita
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap &copy; CARTO',
             maxZoom: 19
         }).addTo(map);
 
-        let markers = [];
 
-        /* --- LOGICA PRINCIPALE --- */
+        /* --- 1. CARICAMENTO DATI (Google Sheets CSV) --- */
+        function loadGoogleSheet() {
+            // ⚠️ INSERISCI QUI IL TUO URL CSV PUBBLICATO DA GOOGLE SHEETS
+            const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDD9d9TR17ytrqgHujBNRsqWVddy5opQ20XobDOgQuTIHngghD_mg3syIeoSCf_hU-fUoadCFIAlc2/pub?gid=0&single=true&output=csv'; 
+
+            fetch(sheetUrl)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .then(csvText => {
+                const rows = csvText.trim().split('\n').slice(1); 
+                
+                events = rows.map((row, index) => {
+                    // Nota: Split con la virgola è vulnerabile se i nomi contengono virgole
+                    const cols = row.split(','); 
+                    
+                    if (cols.length < 9 || isNaN(parseFloat(cols[4]))) return null;
+
+                    // Assegnazione e pulizia dati
+                    return {
+                        id: `sheet_${index + 1}`,
+                        title: cols[0]?.trim(),
+                        date: cols[1]?.trim(), 
+                        category: cols[2]?.trim(),
+                        city: cols[3]?.trim(),
+                        lat: parseFloat(cols[4]),
+                        lon: parseFloat(cols[5]),
+                        url: cols[6]?.trim(),
+                        ticketUrl: cols[7]?.trim() || null, 
+                        source: cols[8]?.trim()?.toLowerCase() || 'manuale'
+                    };
+                }).filter(e => 
+                    e !== null && 
+                    e.date && 
+                    new Date(e.date) >= new Date('2026-01-01') && // Filtra per sicurezza solo eventi futuri (2026+)
+                    e.title
+                );
+                
+                console.log(`Caricati ${events.length} eventi validi.`);
+                
+                // Ordina e renderizza
+                sortEvents(currentSort); 
+                renderEvents(currentFilter);
+                checkNotifications();
+            })
+            .catch(err => {
+                console.error("ERRORE nel caricamento del foglio Google:", err);
+                document.getElementById('events-container').innerHTML = `<p style="color:red; text-align:center; padding: 50px;">⚠️ Errore di connessione ai dati. Controlla l'URL CSV e la console.</p>`;
+            });
+        }
+
+        /* --- 2. LOGICHE DI ORDINAMENTO e FILTRO --- */
+        
+        function sortEvents(sortKey) {
+            currentSort = sortKey;
+            
+            if (sortKey === 'date-asc') {
+                // Più prossimi per primi
+                events.sort((a, b) => new Date(a.date) - new Date(b.date));
+            } else if (sortKey === 'date-desc') {
+                // Più lontani per primi
+                events.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else if (sortKey === 'name-asc') {
+                // Ordine alfabetico A-Z
+                events.sort((a, b) => a.title.localeCompare(b.title));
+            }
+        }
+
+        function handleSortChange(sortKey) {
+            sortEvents(sortKey);
+            // Rerender con il filtro attivo
+            renderEvents(currentFilter);
+        }
+
+        function filterEvents(category, element) {
+            currentFilter = category;
+            document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+            if (element) {
+                element.classList.add('active');
+            } else {
+                 // Assicurati che il chip corretto sia attivo dopo l'ordinamento
+                document.querySelector(`[data-category="${category}"]`).classList.add('active');
+            }
+            // Non riordinare, solo renderizzare con il nuovo filtro
+            renderEvents(category);
+        }
+
+        /* --- 3. RENDERIZZAZIONE UI --- */
+
         function getIconClass(source) {
             switch(source) {
                 case 'facebook': return 'bxl-facebook-circle';
-                case 'x': return 'bxl-twitter'; // O l'icona X se disponibile
+                case 'x': return 'bxl-twitter'; 
                 case 'instagram': return 'bxl-instagram';
-                case 'eventbrite': return 'bxl-calendar-event'; // Generico o specifico se c'è
+                case 'eventbrite': return 'bxl-calendar-event'; 
                 case 'linkedin': return 'bxl-linkedin-square';
                 default: return 'bx-calendar';
             }
@@ -398,70 +445,81 @@
             markers.forEach(m => map.removeLayer(m));
             markers = [];
 
-            events.forEach(ev => {
-                if (filter === 'all' || ev.category === filter) {
-                    
-                    // 1. Crea Card
-                    const card = document.createElement('div');
-                    card.className = 'event-card';
-                    
-                    const iconClass = getIconClass(ev.source);
-                    const ticketBtn = ev.ticketUrl 
-                        ? `<a href="${ev.ticketUrl}" target="_blank" class="btn btn-buy"><i class='bx bx-cart'></i> Ticket Buy</a>`
-                        : `<span class="btn btn-info" style="opacity:0.5; cursor:not-allowed">Gratuito / No Ticket</span>`;
+            let filteredEvents = events.filter(ev => filter === 'all' || ev.category === filter);
 
-                    card.innerHTML = `
-                        <div class="card-header">
-                            <div class="date-badge">${formatDate(ev.date)}</div>
-                            <i class='bx ${iconClass} source-badge' title="Fonte: ${ev.source}"></i>
-                        </div>
-                        <div class="event-title">${ev.title}</div>
-                        <div class="event-loc"><i class='bx bx-map'></i> ${ev.city}</div>
-                        
-                        <div class="card-actions">
-                            <a href="${ev.url}" target="_blank" class="btn btn-info"><i class='bx bx-info-circle'></i> Info</a>
-                            ${ticketBtn}
-                        </div>
-                    `;
-                    container.appendChild(card);
+            if (filteredEvents.length === 0) {
+                 container.innerHTML = `<p style="color:var(--text-muted); text-align:center; padding: 50px;">Nessun evento trovato per la categoria "${filter}".</p>`;
+                 return;
+            }
 
-                    // 2. Marker Mappa
-                    const marker = L.marker([ev.lat, ev.lon]).addTo(map);
-                    marker.bindPopup(`
-                        <b>${ev.title}</b><br>
-                        ${formatDate(ev.date)}<br>
-                        <a href="${ev.url}" target="_blank" style="color:blue">Vedi Evento</a>
-                    `);
-                    markers.push(marker);
-                }
+            filteredEvents.forEach(ev => {
+                
+                // 1. Crea Card
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                
+                const iconClass = getIconClass(ev.source);
+                const ticketBtn = ev.ticketUrl && ev.ticketUrl !== 'N/A' && ev.ticketUrl !== ''
+                    ? `<a href="${ev.ticketUrl}" target="_blank" class="btn btn-buy"><i class='bx bx-cart'></i> Acquista Ticket</a>`
+                    : `<span class="btn btn-info" style="opacity:0.6; cursor:default; border:none; color:var(--text-muted)">Gratuito / No Ticket</span>`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="date-badge">📅 ${formatDate(ev.date)}</div>
+                        <i class='bx ${iconClass} source-badge' title="Fonte: ${ev.source}"></i>
+                    </div>
+                    <div class="event-title">${ev.title}</div>
+                    <div class="event-loc"><i class='bx bxs-map'></i> ${ev.city} (${ev.category})</div>
+                    
+                    <div class="card-actions">
+                        <a href="${ev.url}" target="_blank" class="btn btn-info"><i class='bx bx-info-circle'></i> Info Evento</a>
+                        ${ticketBtn}
+                    </div>
+                `;
+                container.appendChild(card);
+
+                // 2. Marker Mappa
+                const marker = L.marker([ev.lat, ev.lon]).addTo(map);
+                const markerPopupContent = `
+                    <b>${ev.title}</b><br>
+                    ${formatDate(ev.date)}<br>
+                    <a href="${ev.url}" target="_blank" style="color:var(--primary); font-weight:bold;">Vedi Dettagli</a>
+                `;
+                marker.bindPopup(markerPopupContent);
+                markers.push(marker);
             });
         }
 
-        /* --- FILTRI --- */
-        function filterEvents(category, element) {
-            document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-            renderEvents(category);
+        /* --- 4. FUNZIONI UTILITY --- */
+
+        function formatDate(isoDate) {
+            const d = new Date(isoDate + 'T00:00:00'); // Aggiunto T00:00:00 per evitare problemi di fuso orario con solo la data
+            if (isNaN(d)) return isoDate; 
+            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
-        /* --- NOTIFICHE --- */
         function checkNotifications() {
             const today = new Date();
             const toast = document.getElementById('toast');
             const msg = document.getElementById('toast-msg');
             
+            // Ordina per data per trovare il più imminente per primo
+            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
             let found = false;
-            events.forEach(ev => {
-                const evDate = new Date(ev.date);
-                const diffDays = Math.ceil((evDate - today) / (1000 * 60 * 60 * 24));
+            for (const ev of sortedEvents) {
+                const evDate = new Date(ev.date + 'T00:00:00');
+                const diffTime = evDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 
                 if (diffDays >= 0 && diffDays <= 3 && !found) {
-                    msg.innerHTML = `"${ev.title}" è tra ${diffDays} giorni! Prenota il biglietto ora.`;
+                    msg.innerHTML = `"${ev.title}" è tra ${diffDays} giorni! a ${ev.city}.`;
                     toast.style.display = 'block';
                     found = true;
-                    setTimeout(() => { toast.style.display = 'none'; }, 6000);
+                    setTimeout(() => { toast.style.display = 'none'; }, 8000);
+                    break;
                 }
-            });
+            }
         }
 
         /* --- MODALE --- */
@@ -470,26 +528,19 @@
         
         document.getElementById('addEventForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            alert("Grazie! L'evento è stato inviato al team ApulianChain per la validazione.");
+            // In un ambiente reale, i dati del form andrebbero inviati 
+            // a un servizio (es. un API Gateway o un servizio che scrive su Google Sheet).
+            
+            alert("Grazie per la proposta! L'evento è stato inviato al team ApulianChain per la validazione e l'inserimento nel Google Sheet.");
             closeModal();
-            // Qui inseriresti la logica POST reale
+            document.getElementById('addEventForm').reset();
         });
 
-        /* --- UTILS --- */
-        function getRelativeDate(days) {
-            const d = new Date();
-            d.setDate(d.getDate() + days);
-            return d.toISOString().split('T')[0];
-        }
 
-        function formatDate(isoDate) {
-            const d = new Date(isoDate);
-            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-
-        // Init
-        renderEvents('all');
-        checkNotifications();
+        /* --- INIZIALIZZAZIONE --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadGoogleSheet();
+        });
 
     </script>
 </body>
