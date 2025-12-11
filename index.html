@@ -3,376 +3,493 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ApulianChain Calendar | Crypto & AI Events 2026+</title>
+    <title>ApulianChain Calendar | Aggregatore Eventi 2026+</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- CSS MODERNO (CSS3+) --- */
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #3b82f6; /* Blue Tech */
-            --accent-glow: rgba(59, 130, 246, 0.5);
+            --bg-dark: #09090b;
+            --bg-card: rgba(24, 24, 27, 0.7);
+            --primary: #8b5cf6; /* Viola Crypto */
+            --primary-glow: rgba(139, 92, 246, 0.5);
+            --secondary: #06b6d4; /* Ciano Tech */
             --success: #10b981;
-            --warning: #f59e0b;
-            --border-radius: 12px;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --radius: 16px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 20%);
             color: var(--text-main);
-            line-height: 1.6;
+            min-height: 100vh;
         }
-
-        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
 
         /* HEADER */
         header {
-            padding: 2rem 5%;
-            background: linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(15,23,42,0) 100%);
+            padding: 1.5rem 5%;
+            background: rgba(9, 9, 11, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
-        .brand { font-size: 1.5rem; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
-        .brand span { color: #fff; }
-
-        /* FILTRI */
-        .filters {
-            display: flex;
-            gap: 10px;
-            padding: 1rem 5%;
-            overflow-x: auto;
-            white-space: nowrap;
+        .brand { 
+            font-family: 'Space Grotesk', sans-serif; 
+            font-size: 1.6rem; 
+            background: linear-gradient(90deg, #fff, var(--secondary)); 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
 
-        .filter-btn {
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-main);
-            padding: 0.5rem 1.5rem;
+        .add-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.6rem 1.2rem;
             border-radius: 50px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .add-btn:hover { background: var(--primary); border-color: var(--primary); }
+
+        /* FILTERS */
+        .filters-container {
+            padding: 1.5rem 5%;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        
+        .filter-chip {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.5rem 1.2rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
             cursor: pointer;
             transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .filter-chip.active, .filter-chip:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        .filter-btn:hover, .filter-btn.active {
-            background: var(--accent);
-            box-shadow: 0 0 15px var(--accent-glow);
-            border-color: var(--accent);
-        }
-
-        /* LAYOUT GRIGLIA */
-        .main-container {
+        /* LAYOUT */
+        .app-grid {
             display: grid;
-            grid-template-columns: 1fr 350px;
+            grid-template-columns: 1fr 400px;
             gap: 2rem;
-            padding: 2rem 5%;
-            max-width: 1600px;
-            margin: 0 auto;
+            padding: 0 5% 2rem 5%;
+            height: calc(100vh - 160px); /* Full height meno header/filters */
         }
 
-        @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-            #map-column { order: -1; height: 300px; }
+        @media (max-width: 1024px) {
+            .app-grid { grid-template-columns: 1fr; height: auto; }
+            #map-column { height: 400px; order: -1; margin-bottom: 20px; }
         }
 
-        /* LISTA EVENTI */
-        .events-grid {
+        /* EVENT CARDS */
+        .events-scroll {
+            overflow-y: auto;
+            padding-right: 10px;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
+            align-content: start;
         }
+
+        /* Scrollbar custom */
+        .events-scroll::-webkit-scrollbar { width: 6px; }
+        .events-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
         .event-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
             padding: 1.5rem;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s;
             position: relative;
-            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
-        .event-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-
-        .category-tag {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            display: inline-block;
+        .event-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--secondary);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
 
-        .event-date { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .event-location { color: var(--success); font-size: 0.9rem; margin-top: 0.5rem; }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
 
-        /* MAPPA */
+        .source-badge {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+        .source-badge.bx-twitter { color: #1DA1F2; } /* Simulazione colore */
+        .source-badge.bxl-meta { color: #1877F2; }
+        .source-badge.bxl-instagram { color: #E1306C; }
+        .source-badge.bxl-eventbrite { color: #F05537; } /* Colore Eventbrite */
+
+        .date-badge {
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .event-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; line-height: 1.3; }
+        .event-loc { font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 1rem; }
+        
+        /* ACTIONS */
+        .card-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.7rem;
+            border-radius: 8px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-info {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-info:hover { background: rgba(255,255,255,0.1); }
+
+        .btn-buy {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+        }
+        .btn-buy:hover { opacity: 0.9; box-shadow: 0 0 15px var(--primary-glow); }
+
+        /* MAP */
         #map {
             height: 100%;
-            min-height: 400px;
-            border-radius: var(--border-radius);
-            z-index: 1;
-        }
-
-        /* MODALE / FORM AGGIUNTA */
-        .add-event-section {
-            background: rgba(30, 41, 59, 0.5);
-            padding: 2rem 5%;
-            margin-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .form-group { margin-bottom: 1rem; }
-        input, select, textarea {
             width: 100%;
-            padding: 0.8rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: white;
-            border-radius: 8px;
-            font-family: inherit;
-        }
-        button.submit-btn {
-            width: 100%;
-            padding: 1rem;
-            background: var(--success);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-        button.submit-btn:hover { opacity: 0.9; }
-
-        /* NOTIFICHE */
-        .notification-toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--warning);
-            color: #000;
-            padding: 1rem;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            z-index: 9999;
-            display: none;
-            animation: slideIn 0.5s ease;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.1);
+            filter: grayscale(80%) invert(100%) contrast(90%); /* Mappa scura tech */
         }
 
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        /* MODALE & FORM */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: #18181b; border: 1px solid #333; padding: 2rem;
+            border-radius: var(--radius); width: 90%; max-width: 500px;
+        }
+        .form-input {
+            width: 100%; padding: 10px; margin: 8px 0; background: #27272a;
+            border: 1px solid #3f3f46; color: white; border-radius: 8px;
+        }
 
-        footer { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.8rem; }
+        /* NOTIFICATION */
+        .toast {
+            position: fixed; bottom: 30px; right: 30px;
+            background: #18181b; border-left: 4px solid var(--secondary);
+            padding: 1rem; border-radius: 8px; color: white;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            display: none; z-index: 3000;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
     </style>
 </head>
 <body>
 
-    <div id="notification-area" class="notification-toast">
-        🔔 Evento imminente rilevato tra le tue crew preferite!
+    <div id="toast" class="toast">
+        <div style="font-weight:bold; margin-bottom:4px;">🔥 Evento Imminente!</div>
+        <div id="toast-msg"></div>
     </div>
 
     <header>
-        <div class="brand">Apulian<span>Chain</span></div>
-        <button onclick="document.getElementById('add-event-form').scrollIntoView({behavior: 'smooth'})" style="background:transparent; border:1px solid var(--accent); color:var(--accent); padding:0.5rem 1rem; border-radius:4px; cursor:pointer;">+ Aggiungi Evento</button>
+        <div class="brand"><i class='bx bx-cube-alt'></i> ApulianChain</div>
+        <button class="add-btn" onclick="openModal()">
+            <i class='bx bx-plus'></i> Aggiungi Evento
+        </button>
     </header>
 
-    <div class="filters">
-        <button class="filter-btn active" onclick="filterEvents('all')">Tutti</button>
-        <button class="filter-btn" onclick="filterEvents('Crypto')">Crypto</button>
-        <button class="filter-btn" onclick="filterEvents('Blockchain')">Blockchain</button>
-        <button class="filter-btn" onclick="filterEvents('Finanza')">Finanza</button>
-        <button class="filter-btn" onclick="filterEvents('AI')">AI</button>
+    <div class="filters-container">
+        <div class="filter-chip active" onclick="filterEvents('all', this)"><i class='bx bx-grid-alt'></i> Tutto</div>
+        <div class="filter-chip" onclick="filterEvents('Crypto', this)"><i class='bx bx-bitcoin'></i> Crypto</div>
+        <div class="filter-chip" onclick="filterEvents('Blockchain', this)"><i class='bx bx-link'></i> Blockchain</div>
+        <div class="filter-chip" onclick="filterEvents('Finanza', this)"><i class='bx bx-line-chart'></i> Finanza</div>
+        <div class="filter-chip" onclick="filterEvents('AI', this)"><i class='bx bx-brain'></i> AI & Tech</div>
     </div>
 
-    <div class="main-container">
-        <div id="events-list" class="events-grid">
+    <div class="app-grid">
+        <div id="events-container" class="events-scroll">
             </div>
-
         <div id="map-column">
             <div id="map"></div>
         </div>
     </div>
 
-    <div class="add-event-section" id="add-event-form">
-        <h2 style="margin-bottom: 1rem;">Aggiungi Evento Crew</h2>
-        <form id="newEventForm">
-            <div class="form-group">
-                <input type="text" id="title" placeholder="Nome Evento" required>
-            </div>
-            <div class="form-group">
-                <select id="category">
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="margin-bottom:1rem">Proponi Evento Crew</h2>
+            <form id="addEventForm">
+                <input type="text" class="form-input" id="in-title" placeholder="Nome Evento" required>
+                <select class="form-input" id="in-cat">
                     <option value="Crypto">Crypto</option>
                     <option value="Blockchain">Blockchain</option>
                     <option value="Finanza">Finanza</option>
                     <option value="AI">AI</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <input type="date" id="date" min="2026-01-01" required>
-                <small style="color:gray">Dal 2026 in poi</small>
-            </div>
-            <div class="form-group">
-                <input type="text" id="city" placeholder="Città (es. Bari, Milano)" required>
-            </div>
-            <button type="submit" class="submit-btn">Invia alla Crew</button>
-        </form>
+                <input type="date" class="form-input" id="in-date" min="2026-01-01" required>
+                <input type="text" class="form-input" id="in-city" placeholder="Città" required>
+                <input type="url" class="form-input" id="in-link" placeholder="Link Info (es. Facebook/X)" required>
+                <input type="url" class="form-input" id="in-ticket" placeholder="Link Ticket (es. Eventbrite/Luma)">
+                
+                <div style="display:flex; gap:10px; margin-top:1rem;">
+                    <button type="button" class="btn btn-info" onclick="closeModal()">Annulla</button>
+                    <button type="submit" class="btn btn-buy">Invia Richiesta</button>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <footer>
-        <p>Firmato <strong>ApulianChain</strong> | Aggregatore Eventi Italiani 2026+</p>
-        <p>Open Source & Community Driven</p>
-    </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
-        // --- 1. CONFIGURAZIONE & DATI MOCK (Sostituire con le tue API in futuro) ---
+        /* --- DATI (Simulazione API Aggregator) --- */
+        // Nota Tecnica: In produzione, questo JSON dovrebbe essere generato da un backend (Python/Node) 
+        // che fa scraping di FB/Eventbrite/X, poiché il browser blocca le chiamate dirette (CORS).
         
-        // Questo array simula il database JSON o la risposta dell'API Aggregatore
-        let eventsData = [
-            { id: 1, title: "Apulian Blockchain Summit", date: "2026-03-15", category: "Blockchain", city: "Bari", lat: 41.1171, lon: 16.8719, desc: "Il ritrovo delle crew del sud." },
-            { id: 2, title: "Milan AI Week 2026", date: "2026-05-10", category: "AI", city: "Milano", lat: 45.4642, lon: 9.1900, desc: "Innovazione e Reti Neurali." },
-            { id: 3, title: "Crypto Finance Forum", date: "2026-02-20", category: "Finanza", city: "Roma", lat: 41.9028, lon: 12.4964, desc: "Il futuro della DeFi." },
-            { id: 4, title: "Web3 Hackathon Italia", date: "2026-06-01", category: "Crypto", city: "Torino", lat: 45.0703, lon: 7.6869, desc: "Costruiamo su chain." },
-            // Evento "tra 3 giorni" (dinamico per testare notifica)
-            { id: 99, title: "Evento Imminente Test", date: getDateInDays(3), category: "Blockchain", city: "Napoli", lat: 40.8518, lon: 14.2681, desc: "Test notifiche." }
+        let events = [
+            { 
+                id: 1, 
+                title: "Apulian Web3 Summit", 
+                date: "2026-03-15", 
+                category: "Blockchain", 
+                source: "facebook", // facebook, x, instagram, eventbrite
+                city: "Bari", 
+                lat: 41.1171, lon: 16.8719, 
+                url: "https://facebook.com/event-placeholder",
+                ticketUrl: "https://eventbrite.com/ticket-placeholder"
+            },
+            { 
+                id: 2, 
+                title: "Milan AI Revolution", 
+                date: "2026-05-10", 
+                category: "AI", 
+                source: "eventbrite",
+                city: "Milano", 
+                lat: 45.4642, lon: 9.1900, 
+                url: "https://eventbrite.com/info",
+                ticketUrl: "https://eventbrite.com/buy"
+            },
+            { 
+                id: 3, 
+                title: "DeFi Rome Meetup", 
+                date: "2026-02-20", 
+                category: "Finanza", 
+                source: "x",
+                city: "Roma", 
+                lat: 41.9028, lon: 12.4964, 
+                url: "https://twitter.com/event",
+                ticketUrl: null // Evento gratuito
+            },
+            { 
+                id: 4, 
+                title: "NFT Napoli Gallery", 
+                date: "2026-06-01", 
+                category: "Crypto", 
+                source: "instagram",
+                city: "Napoli", 
+                lat: 40.8518, lon: 14.2681, 
+                url: "https://instagram.com/p/placeholder",
+                ticketUrl: "https://luma.com/ticket"
+            },
+            // Evento imminente per testare notifica
+            { 
+                id: 99, 
+                title: "Test Evento Imminente", 
+                date: getRelativeDate(2), 
+                category: "Blockchain", 
+                source: "linkedin",
+                city: "Lecce", 
+                lat: 40.3515, lon: 18.1750, 
+                url: "#", 
+                ticketUrl: "#" 
+            }
         ];
 
-        // --- 2. INIZIALIZZAZIONE MAPPA (Leaflet) ---
-        const map = L.map('map').setView([41.8719, 12.5674], 5); // Centrato sull'Italia
-        
-        // Carica Tiles gratuite da OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors',
+        /* --- MAPPA --- */
+        const map = L.map('map').setView([42.5, 12.5], 6);
+        // Tile scura gratuita
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &copy; CARTO',
             maxZoom: 19
         }).addTo(map);
 
         let markers = [];
 
-        // --- 3. FUNZIONI LOGICHE ---
+        /* --- LOGICA PRINCIPALE --- */
+        function getIconClass(source) {
+            switch(source) {
+                case 'facebook': return 'bxl-facebook-circle';
+                case 'x': return 'bxl-twitter'; // O l'icona X se disponibile
+                case 'instagram': return 'bxl-instagram';
+                case 'eventbrite': return 'bxl-calendar-event'; // Generico o specifico se c'è
+                case 'linkedin': return 'bxl-linkedin-square';
+                default: return 'bx-calendar';
+            }
+        }
 
-        // A. Renderizza Eventi e Marcatori
-        function renderEvents(filterCategory) {
-            const container = document.getElementById('events-list');
-            container.innerHTML = ''; // Pulisci lista
+        function renderEvents(filter) {
+            const container = document.getElementById('events-container');
+            container.innerHTML = '';
             
-            // Rimuovi vecchi marker
+            // Pulisci mappa
             markers.forEach(m => map.removeLayer(m));
             markers = [];
 
-            eventsData.forEach(event => {
-                if (filterCategory === 'all' || event.category === filterCategory) {
+            events.forEach(ev => {
+                if (filter === 'all' || ev.category === filter) {
                     
-                    // 1. Crea Card HTML
+                    // 1. Crea Card
                     const card = document.createElement('div');
                     card.className = 'event-card';
+                    
+                    const iconClass = getIconClass(ev.source);
+                    const ticketBtn = ev.ticketUrl 
+                        ? `<a href="${ev.ticketUrl}" target="_blank" class="btn btn-buy"><i class='bx bx-cart'></i> Ticket Buy</a>`
+                        : `<span class="btn btn-info" style="opacity:0.5; cursor:not-allowed">Gratuito / No Ticket</span>`;
+
                     card.innerHTML = `
-                        <span class="category-tag">${event.category}</span>
-                        <h3>${event.title}</h3>
-                        <div class="event-date">📅 ${event.date}</div>
-                        <p style="font-size:0.9rem; color:#ccc">${event.desc}</p>
-                        <div class="event-location">📍 ${event.city}</div>
+                        <div class="card-header">
+                            <div class="date-badge">${formatDate(ev.date)}</div>
+                            <i class='bx ${iconClass} source-badge' title="Fonte: ${ev.source}"></i>
+                        </div>
+                        <div class="event-title">${ev.title}</div>
+                        <div class="event-loc"><i class='bx bx-map'></i> ${ev.city}</div>
+                        
+                        <div class="card-actions">
+                            <a href="${ev.url}" target="_blank" class="btn btn-info"><i class='bx bx-info-circle'></i> Info</a>
+                            ${ticketBtn}
+                        </div>
                     `;
                     container.appendChild(card);
 
-                    // 2. Aggiungi Marker su Mappa
-                    const marker = L.marker([event.lat, event.lon])
-                        .addTo(map)
-                        .bindPopup(`<b>${event.title}</b><br>${event.date}`);
+                    // 2. Marker Mappa
+                    const marker = L.marker([ev.lat, ev.lon]).addTo(map);
+                    marker.bindPopup(`
+                        <b>${ev.title}</b><br>
+                        ${formatDate(ev.date)}<br>
+                        <a href="${ev.url}" target="_blank" style="color:blue">Vedi Evento</a>
+                    `);
                     markers.push(marker);
                 }
             });
         }
 
-        // B. Logica Notifiche (3 giorni prima)
+        /* --- FILTRI --- */
+        function filterEvents(category, element) {
+            document.querySelectorAll('.filter-chip').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            renderEvents(category);
+        }
+
+        /* --- NOTIFICHE --- */
         function checkNotifications() {
             const today = new Date();
-            const notificationArea = document.getElementById('notification-area');
-            let hasIncoming = false;
-
-            eventsData.forEach(event => {
-                const eventDate = new Date(event.date);
-                const diffTime = eventDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-
-                // Se l'evento è tra 0 e 3 giorni
-                if (diffDays >= 0 && diffDays <= 3) {
-                    hasIncoming = true;
-                    notificationArea.innerHTML = `🔔 <strong>${event.title}</strong> tra ${diffDays} giorni a ${event.city}!`;
+            const toast = document.getElementById('toast');
+            const msg = document.getElementById('toast-msg');
+            
+            let found = false;
+            events.forEach(ev => {
+                const evDate = new Date(ev.date);
+                const diffDays = Math.ceil((evDate - today) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays >= 0 && diffDays <= 3 && !found) {
+                    msg.innerHTML = `"${ev.title}" è tra ${diffDays} giorni! Prenota il biglietto ora.`;
+                    toast.style.display = 'block';
+                    found = true;
+                    setTimeout(() => { toast.style.display = 'none'; }, 6000);
                 }
             });
-
-            if (hasIncoming) {
-                notificationArea.style.display = 'block';
-                // Nascondi dopo 5 secondi
-                setTimeout(() => { notificationArea.style.display = 'none'; }, 8000);
-            }
         }
 
-        // C. Gestione Aggiunta Manuale
-        document.getElementById('newEventForm').addEventListener('submit', function(e) {
+        /* --- MODALE --- */
+        function openModal() { document.getElementById('modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        
+        document.getElementById('addEventForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            
-            // In uno scenario reale, qui faresti una POST alle API o a Google Sheets
-            const newEvent = {
-                id: eventsData.length + 1,
-                title: document.getElementById('title').value,
-                category: document.getElementById('category').value,
-                date: document.getElementById('date').value,
-                city: document.getElementById('city').value,
-                lat: 41.9028, // Default Roma (in prod serve geocoding api)
-                lon: 12.4964,
-                desc: "Evento aggiunto dalla community"
-            };
-
-            eventsData.push(newEvent);
-            renderEvents('all'); // Ricarica
-            alert('Evento proposto con successo! In attesa di validazione ApulianChain.');
-            this.reset();
+            alert("Grazie! L'evento è stato inviato al team ApulianChain per la validazione.");
+            closeModal();
+            // Qui inseriresti la logica POST reale
         });
 
-        // D. Filtri UI
-        window.filterEvents = function(cat) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            renderEvents(cat);
+        /* --- UTILS --- */
+        function getRelativeDate(days) {
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
         }
 
-        // Helper per generare date future (per la demo)
-        function getDateInDays(days) {
-            const date = new Date();
-            date.setDate(date.getDate() + days);
-            return date.toISOString().split('T')[0];
+        function formatDate(isoDate) {
+            const d = new Date(isoDate);
+            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
         }
 
-        // --- AVVIO ---
-        // Simula chiamata API all'avvio
-        document.addEventListener('DOMContentLoaded', () => {
-            /* QUI DOVRESTI SOSTITUIRE "eventsData" CON:
-               fetch('https://tua-api-o-json-su-github.com/events.json')
-                 .then(res => res.json())
-                 .then(data => { eventsData = data; renderEvents('all'); });
-            */
-            
-            renderEvents('all');
-            checkNotifications();
-        });
+        // Init
+        renderEvents('all');
+        checkNotifications();
 
     </script>
 </body>
